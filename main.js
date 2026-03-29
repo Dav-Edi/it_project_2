@@ -27,6 +27,88 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".section").forEach((section) => {
     observer.observe(section);
   });
+
+  const scrollTopBtn = document.querySelector(".scroll-top");
+  const updateScrollButton = () => {
+    if (!scrollTopBtn) return;
+    if (window.scrollY > 320) {
+      scrollTopBtn.classList.add("visible");
+    } else {
+      scrollTopBtn.classList.remove("visible");
+    }
+  };
+
+  updateScrollButton();
+  window.addEventListener("scroll", updateScrollButton, { passive: true });
+  if (scrollTopBtn) {
+    scrollTopBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  document.querySelectorAll(".project-card").forEach((card) => {
+    const resetCard = () => {
+      card.style.setProperty("--rx", "0deg");
+      card.style.setProperty("--ry", "0deg");
+    };
+
+    card.addEventListener("mousemove", (event) => {
+      const rect = card.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      const rotateX = (0.5 - y) * 8;
+      const rotateY = (x - 0.5) * 8;
+      card.style.setProperty("--rx", `${rotateX}deg`);
+      card.style.setProperty("--ry", `${rotateY}deg`);
+    });
+    card.addEventListener("mouseleave", resetCard);
+  });
+
+  const caseModal = document.querySelector(".case-modal");
+  const caseFrame = document.querySelector(".case-modal-frame");
+  const caseTitle = document.querySelector(".case-modal-title");
+  const caseClose = document.querySelector(".case-modal-close");
+  const caseBackdrop = document.querySelector(".case-modal-backdrop");
+  const caseOpenFull = document.querySelector(".modal-open-full");
+
+  if (caseModal && caseFrame && caseTitle) {
+    const closeModal = () => {
+      caseModal.classList.remove("active");
+      caseModal.setAttribute("aria-hidden", "true");
+      caseFrame.src = "";
+    };
+
+    const openModal = (title, url) => {
+      caseTitle.textContent = title;
+      caseFrame.src = url;
+      if (caseOpenFull) caseOpenFull.href = url;
+      caseModal.classList.add("active");
+      caseModal.setAttribute("aria-hidden", "false");
+    };
+
+    document.querySelectorAll("[data-case-file]").forEach((trigger) => {
+      trigger.addEventListener("click", (event) => {
+        event.preventDefault();
+        const file = trigger.dataset.caseFile;
+        const title = trigger.dataset.caseTitle || "Кейс проекта";
+        if (file) {
+          openModal(title, file);
+        }
+      });
+    });
+
+    if (caseClose) {
+      caseClose.addEventListener("click", closeModal);
+    }
+    if (caseBackdrop) {
+      caseBackdrop.addEventListener("click", closeModal);
+    }
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && caseModal.classList.contains("active")) {
+        closeModal();
+      }
+    });
+  }
 });
 
 function initAvatarCanvases() {
